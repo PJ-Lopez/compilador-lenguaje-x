@@ -1,3 +1,4 @@
+// Tabla con los identificadores registrados y sus datos.
 function SymbolTable({ symbols = [] }) {
   return (
     <div className="table-section">

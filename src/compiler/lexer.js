@@ -1,3 +1,6 @@
+// Analizador léxico del subconjunto didáctico Mini-C (C estructurado + print).
+// Reconoce palabras reservadas, identificadores, números, operadores y delimitadores.
+// Palabras reservadas de Mini-C y su token asociado.
 const KEYWORDS = {
   while: 'WHILE',
   if: 'IF',
@@ -7,6 +10,7 @@ const KEYWORDS = {
   print: 'PRINT',
 }
 
+// Representación oficial de cada token para la salida del analizador.
 const DISPLAY = {
   ID: '<ID>',
   ASIG: '<ASIG>',
@@ -28,6 +32,7 @@ const DISPLAY = {
   EOF: '<EOF>',
 }
 
+// Tokens que se reconocen con un único carácter.
 const SINGLE_CHAR_TOKENS = {
   '=': 'ASIG',
   '+': 'PLUS',
@@ -43,14 +48,17 @@ const SINGLE_CHAR_TOKENS = {
 
 const RELATIONAL = ['<=', '>=', '==', '!=', '<', '>']
 
+// Expresiones regulares "sticky" que reconocen tokens desde la posición actual.
 const IDENTIFIER_RE = /[A-Za-z_][A-Za-z0-9_]*/y
 const NUMBER_RE = /\d+(?:\.\d+)?/y
 const RELATIONAL_RE = /<=|>=|==|!=|<|>/y
 
+// Divide el código en líneas para reportar la sentencia de cada error.
 function buildLineIndex(source) {
   return source.split(/\r?\n/)
 }
 
+// Recorre el código y devuelve tokens, tabla de símbolos y errores léxicos.
 export function tokenize(source = '') {
   const tokens = []
   const errors = []
@@ -63,6 +71,7 @@ export function tokenize(source = '') {
 
   const currentSentence = () => (lines[line - 1] || '').trim()
 
+  // Agrega un token con su ubicación y formato de visualización.
   const pushToken = (type, lexeme, value, startLine, startColumn) => {
     tokens.push({
       type,
@@ -74,6 +83,7 @@ export function tokenize(source = '') {
     })
   }
 
+  // Registra un identificador nuevo o incrementa sus ocurrencias.
   const registerSymbol = (name, symbolLine, symbolColumn) => {
     const existing = symbolMap.get(name)
     if (existing) {
@@ -92,6 +102,7 @@ export function tokenize(source = '') {
     symbols.push(symbol)
   }
 
+  // Actualiza índice, fila y columna según el texto consumido.
   const advanceText = (text) => {
     for (const char of text) {
       if (char === '\n') {
@@ -162,6 +173,7 @@ export function tokenize(source = '') {
       continue
     }
 
+    // Un carácter desconocido se reporta y se omite para continuar el análisis.
     errors.push({
       tipo: 'Léxico',
       fila: startLine,
@@ -173,6 +185,7 @@ export function tokenize(source = '') {
     advanceText(char)
   }
 
+  // Token centinela que indica el final del flujo al parser.
   tokens.push({
     type: 'EOF',
     lexeme: 'EOF',

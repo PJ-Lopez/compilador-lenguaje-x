@@ -7,13 +7,31 @@ import { parse } from './compiler/parser'
 import { SAMPLE_CODE } from './compiler/sampleCode'
 import './App.css'
 
+const DEFAULT_FILE_NAME = 'programa.c'
+const SOURCE_EXTENSION_RE = /\.(c|x)$/i
+
+// Conserva .c/.x y usa .c por defecto para archivos de texto.
+function toSourceFileName(name) {
+  const trimmed = (name || DEFAULT_FILE_NAME).trim()
+  if (!trimmed) {
+    return DEFAULT_FILE_NAME
+  }
+  if (SOURCE_EXTENSION_RE.test(trimmed)) {
+    return trimmed
+  }
+  const base = trimmed.replace(/\.txt$/i, '')
+  return `${base || 'programa'}.c`
+}
+
 function App() {
+  // Estado del documento, archivo actual y resultado de la compilación.
   const [code, setCode] = useState(SAMPLE_CODE)
-  const [fileName, setFileName] = useState('programa.x')
+  const [fileName, setFileName] = useState(DEFAULT_FILE_NAME)
   const [result, setResult] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const fileInputRef = useRef(null)
 
+  // Limpia el editor y reinicia el resultado actual.
   const handleNew = () => {
     if (
       code.trim() &&
@@ -25,15 +43,17 @@ function App() {
     }
 
     setCode('')
-    setFileName('programa.x')
+    setFileName(DEFAULT_FILE_NAME)
     setResult(null)
     setIsModalOpen(false)
   }
 
+  // Abre el selector de archivos .c / .x / .txt.
   const handleOpen = () => {
     fileInputRef.current?.click()
   }
 
+  // Carga el contenido del archivo seleccionado con FileReader.
   const handleFileChange = (event) => {
     const file = event.target.files?.[0]
     if (!file) {
@@ -43,7 +63,7 @@ function App() {
     const reader = new FileReader()
     reader.onload = (loadEvent) => {
       setCode(String(loadEvent.target?.result ?? ''))
-      setFileName(file.name || 'programa.x')
+      setFileName(file.name || DEFAULT_FILE_NAME)
       setResult(null)
       setIsModalOpen(false)
     }
@@ -51,13 +71,11 @@ function App() {
     event.target.value = ''
   }
 
+  // Descarga el código como .c por defecto, conservando .c/.x.
   const handleSave = () => {
     const blob = new Blob([code], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
-    const normalizedName = fileName || 'programa.x'
-    const downloadName = normalizedName.toLowerCase().endsWith('.x')
-      ? normalizedName
-      : `${normalizedName}.x`
+    const downloadName = toSourceFileName(fileName)
 
     const link = document.createElement('a')
     link.href = url
@@ -68,6 +86,7 @@ function App() {
     URL.revokeObjectURL(url)
   }
 
+  // Ejecuta lexer y parser, y abre el modal con los resultados.
   const handleCompile = () => {
     if (!code.trim()) {
       setResult({
@@ -81,7 +100,7 @@ function App() {
             columna: 1,
             sentencia: '',
             descripcion:
-              'El editor está vacío. Escribe o abre un archivo .x antes de compilar.',
+              'El editor está vacío. Escribe o abre un archivo .c / .x antes de compilar.',
           },
         ],
       })
@@ -118,10 +137,12 @@ function App() {
       <main className="workspace">
         <div className="workspace-heading">
           <div>
-            <p className="workspace-eyebrow">Editor de código</p>
+            <p className="workspace-eyebrow">
+              Editor de código · Lenguaje C (Mini-C)
+            </p>
             <h2>
-              {fileName || 'programa.x'}
-              <span className="extension-badge">.x</span>
+              {fileName || DEFAULT_FILE_NAME}
+              <span className="extension-badge">.c / .x</span>
             </h2>
           </div>
           <div className="workspace-meta">
@@ -137,9 +158,10 @@ function App() {
         />
 
         <p className="editor-hint">
-          Soporta declaraciones <code>int</code> / <code>float</code>,
+          Mini-C soporta declaraciones <code>int</code> / <code>float</code>,
           asignaciones, <code>if/else</code>, <code>while</code>,{' '}
-          <code>print</code>, operadores aritméticos y relacionales. Presiona{' '}
+          <code>print</code>, operadores aritméticos y relacionales. Abre o
+          guarda archivos <code>.c</code> / <code>.x</code> y presiona{' '}
           <strong>COMPILAR</strong> para analizar el código.
         </p>
       </main>
@@ -147,7 +169,7 @@ function App() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".x,text/plain"
+        accept=".c,.x,.txt"
         className="hidden-input"
         onChange={handleFileChange}
       />

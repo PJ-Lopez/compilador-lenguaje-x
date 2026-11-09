@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 
+// Editor de código con numeración de líneas, cursor y atajos de teclado.
 function CodeEditor({ value, onChange, onCompile }) {
   const textareaRef = useRef(null)
   const gutterRef = useRef(null)
@@ -14,12 +15,14 @@ function CodeEditor({ value, onChange, onCompile }) {
     (lines[displayLine - 1]?.length ?? 0) + 1,
   )
 
+  // Mantiene sincronizada la numeración con el scroll del textarea.
   const syncScroll = () => {
     if (gutterRef.current && textareaRef.current) {
       gutterRef.current.scrollTop = textareaRef.current.scrollTop
     }
   }
 
+  // Calcula la fila y la columna a partir de la posición del cursor.
   const updateCursor = (text) => {
     const textarea = textareaRef.current
     if (!textarea) {
@@ -40,6 +43,7 @@ function CodeEditor({ value, onChange, onCompile }) {
     updateCursor(nextValue)
   }
 
+  // Inserta espacios con Tab y compila con Ctrl/Cmd + Enter.
   const handleKeyDown = (event) => {
     if (event.key === 'Tab') {
       event.preventDefault()
@@ -63,7 +67,10 @@ function CodeEditor({ value, onChange, onCompile }) {
   }
 
   return (
-    <section className="editor-shell" aria-label="Editor de código Lenguaje X">
+    <section
+      className="editor-shell"
+      aria-label="Editor de código Lenguaje C (Mini-C)"
+    >
       <div className="editor-gutter" ref={gutterRef} aria-hidden="true">
         {lineNumbers.map((line) => (
           <span key={line}>{line}</span>
@@ -84,8 +91,8 @@ function CodeEditor({ value, onChange, onCompile }) {
         autoCapitalize="off"
         autoCorrect="off"
         wrap="off"
-        aria-label="Código fuente en Lenguaje X"
-        placeholder="Escribe aquí tu programa en Lenguaje X..."
+        aria-label="Código fuente en Lenguaje C (Mini-C)"
+        placeholder="Escribe aquí tu programa en Lenguaje C (Mini-C)..."
       />
 
       <div className="editor-status">
@@ -93,7 +100,7 @@ function CodeEditor({ value, onChange, onCompile }) {
           Ln {displayLine}, Col {displayColumn}
         </span>
         <span>{lineCount} líneas</span>
-        <span>Lenguaje X · UMES</span>
+        <span>Lenguaje C (Mini-C) · UMES</span>
       </div>
     </section>
   )

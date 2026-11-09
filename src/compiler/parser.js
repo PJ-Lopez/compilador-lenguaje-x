@@ -1,3 +1,7 @@
+// Analizador sintáctico de descenso recursivo para el Lenguaje C (Mini-C).
+// Valida declaraciones, asignaciones, if/else, while, bloques y expresiones.
+// Construye el AST y recolecta errores con modo pánico simple.
+// Tokens con los que puede iniciar una sentencia válida.
 const STATEMENT_STARTERS = new Set([
   'INT',
   'FLOAT',
@@ -8,12 +12,14 @@ const STATEMENT_STARTERS = new Set([
   'LLAV_IZQ',
 ])
 
+// Puntos seguros para reanudar el análisis después de un error.
 const SYNCHRONIZATION_BOUNDARIES = new Set([
   ...STATEMENT_STARTERS,
   'LLAV_DER',
   'ELSE',
 ])
 
+// Parser de descenso recursivo que construye el AST y recolecta errores.
 class Parser {
   constructor(tokens, symbols = [], source = '') {
     this.tokens = tokens
@@ -24,6 +30,7 @@ class Parser {
     this.errors = []
   }
 
+  // Analiza todas las sentencias hasta EOF sin abortar ante errores.
   parse() {
     const body = []
 
@@ -49,6 +56,7 @@ class Parser {
     }
   }
 
+  // Selecciona el tipo de sentencia según el token actual.
   statement() {
     if (this.check('TERM')) {
       this.advance()
@@ -95,6 +103,7 @@ class Parser {
     return null
   }
 
+  // Analiza una declaración int/float con inicialización opcional.
   declaration(typeToken) {
     const dataType = typeToken.type === 'INT' ? 'int' : 'float'
     const nameToken = this.consume(
@@ -128,6 +137,7 @@ class Parser {
     }
   }
 
+  // Analiza una asignación con la forma ID = expresión;
   assignment() {
     const nameToken = this.advance()
 
@@ -155,6 +165,7 @@ class Parser {
     }
   }
 
+  // Analiza if (condición) sentencia [else sentencia].
   ifStatement() {
     const ifToken = this.advance()
 
@@ -178,6 +189,7 @@ class Parser {
     }
   }
 
+  // Analiza while (condición) sentencia.
   whileStatement() {
     const whileToken = this.advance()
 
@@ -195,6 +207,7 @@ class Parser {
     }
   }
 
+  // Analiza print(expresión); o print expresión; (extensión didáctica).
   printStatement() {
     const printToken = this.advance()
     let value
@@ -216,6 +229,7 @@ class Parser {
     }
   }
 
+  // Analiza un bloque de sentencias delimitado por llaves.
   block() {
     const openToken = this.advance()
     const body = []
@@ -245,10 +259,12 @@ class Parser {
     }
   }
 
+  // Inicia el análisis de expresiones respetando la precedencia.
   expression() {
     return this.equality()
   }
 
+  // Nivel de menor precedencia: operadores == y !=.
   equality() {
     let expression = this.relational()
     let operator = this.matchRelational(['==', '!='])
@@ -268,6 +284,7 @@ class Parser {
     return expression
   }
 
+  // Operadores relacionales: <, >, <= y >=.
   relational() {
     let expression = this.additive()
     let operator = this.matchRelational(['<', '>', '<=', '>='])
@@ -287,6 +304,7 @@ class Parser {
     return expression
   }
 
+  // Sumas y restas, evaluadas de izquierda a derecha.
   additive() {
     let expression = this.multiplicative()
 
@@ -305,6 +323,7 @@ class Parser {
     return expression
   }
 
+  // Multiplicaciones y divisiones, evaluadas de izquierda a derecha.
   multiplicative() {
     let expression = this.unary()
 
@@ -323,6 +342,7 @@ class Parser {
     return expression
   }
 
+  // Operadores unarios + y - aplicados antes de un operando.
   unary() {
     if (this.match('MINUS', 'PLUS')) {
       const operator = this.previous()
@@ -337,6 +357,7 @@ class Parser {
     return this.primary()
   }
 
+  // Números, identificadores y expresiones entre paréntesis.
   primary() {
     if (this.match('NUM')) {
       const token = this.previous()
@@ -394,6 +415,7 @@ class Parser {
     return null
   }
 
+  // Exige el terminador ';' y decide si conviene sincronizar.
   finishStatement(context) {
     if (this.match('TERM')) {
       return true
@@ -411,6 +433,7 @@ class Parser {
     return false
   }
 
+  // Modo pánico: avanza hasta ';', '}' o el inicio de otra sentencia.
   synchronize() {
     if (this.isAtEnd() || SYNCHRONIZATION_BOUNDARIES.has(this.peek().type)) {
       return
@@ -429,6 +452,7 @@ class Parser {
     }
   }
 
+  // Completa la tabla de símbolos con el tipo o valor detectado.
   updateSymbolType(name, type) {
     const symbol = this.symbolMap.get(name)
     if (symbol) {
@@ -484,6 +508,7 @@ class Parser {
     return this.tokens[Math.max(this.current - 1, 0)]
   }
 
+  // Registra un error sintáctico con fila, columna y sentencia original.
   errorAt(token, description) {
     this.errors.push({
       tipo: 'Sintáctico',
@@ -495,6 +520,7 @@ class Parser {
   }
 }
 
+// Crea el parser y devuelve AST, errores y tabla de símbolos enriquecida.
 export function parse(tokens, symbols = [], source = '') {
   const parser = new Parser(tokens, symbols, source)
   return parser.parse()

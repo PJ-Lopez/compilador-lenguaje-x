@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Network } from 'vis-network/standalone'
 import 'vis-network/styles/vis-network.css'
 
+// Configuración visual y de interacción del grafo jerárquico.
 const NETWORK_OPTIONS = {
   layout: {
     hierarchical: {
@@ -33,17 +34,17 @@ const NETWORK_OPTIONS = {
     margin: { top: 12, bottom: 12, left: 18, right: 18 },
     widthConstraint: { maximum: 240 },
     font: {
-      color: '#f8fafc',
+      color: '#2f2d28',
       face: 'ui-monospace, Consolas, monospace',
       size: 13,
     },
-    borderWidth: 2,
+    borderWidth: 1.5,
     shadow: {
       enabled: true,
-      color: 'rgba(2, 6, 23, 0.45)',
-      size: 10,
+      color: 'rgba(92, 81, 58, 0.16)',
+      size: 8,
       x: 0,
-      y: 4,
+      y: 3,
     },
   },
   edges: {
@@ -51,9 +52,9 @@ const NETWORK_OPTIONS = {
       to: { enabled: true, scaleFactor: 0.7 },
     },
     color: {
-      color: '#475569',
-      highlight: '#22d3ee',
-      hover: '#22d3ee',
+      color: '#b3aa96',
+      highlight: '#2f6f4f',
+      hover: '#2f6f4f',
     },
     width: 1.5,
     smooth: {
@@ -65,32 +66,33 @@ const NETWORK_OPTIONS = {
   },
   groups: {
     program: {
-      color: { background: '#1d4ed8', border: '#60a5fa' },
+      color: { background: '#dbe8f4', border: '#5b87ad' },
     },
     declaration: {
-      color: { background: '#047857', border: '#34d399' },
+      color: { background: '#dfeee2', border: '#4f8a67' },
     },
     statement: {
-      color: { background: '#0e7490', border: '#22d3ee' },
+      color: { background: '#daeeee', border: '#3d8181' },
     },
     control: {
-      color: { background: '#b45309', border: '#fbbf24' },
+      color: { background: '#f6e8cd', border: '#b98a3e' },
     },
     block: {
-      color: { background: '#4c1d95', border: '#a78bfa' },
+      color: { background: '#e9e2f2', border: '#7d6a99' },
     },
     expression: {
-      color: { background: '#7e22ce', border: '#c084fc' },
+      color: { background: '#f3e2e1', border: '#a96a63' },
     },
     literal: {
-      color: { background: '#0f766e', border: '#2dd4bf' },
+      color: { background: '#e3efe0', border: '#6a8f4e' },
     },
     identifier: {
-      color: { background: '#334155', border: '#94a3b8' },
+      color: { background: '#ece9e0', border: '#9a927f' },
     },
   },
 }
 
+// Convierte cada nodo del AST en una etiqueta y un grupo visual.
 function describeNode(node) {
   switch (node.type) {
     case 'Program':
@@ -126,6 +128,7 @@ function describeNode(node) {
   }
 }
 
+// Recorre el AST y genera los nodos y aristas de vis-network.
 function buildGraph(ast) {
   const nodes = []
   const edges = []
@@ -191,10 +194,12 @@ function buildGraph(ast) {
   return { nodes, edges }
 }
 
+// Renderiza el AST interactivo y ajusta la vista al montar.
 function SyntaxTreeVisualizer({ ast }) {
   const containerRef = useRef(null)
   const networkRef = useRef(null)
 
+  // Crea la red, la ajusta al contenedor y libera recursos al desmontar.
   useEffect(() => {
     const container = containerRef.current
     if (!container || !ast) {

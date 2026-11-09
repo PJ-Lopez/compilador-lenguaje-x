@@ -1,3 +1,4 @@
+// Tabla de errores léxicos, sintácticos y generales.
 function ErrorTable({ errors = [] }) {
   if (errors.length === 0) {
     return (
@@ -8,6 +9,7 @@ function ErrorTable({ errors = [] }) {
     )
   }
 
+  // Ordena los errores por fila y columna para facilitar su lectura.
   const sortedErrors = [...errors].sort(
     (left, right) =>
       left.fila - right.fila || (left.columna ?? 0) - (right.columna ?? 0),

@@ -1,5 +1,7 @@
+// Tokens cuyo lexema conviene mostrar junto a la etiqueta.
 const DETAIL_TYPES = new Set(['ID', 'OP_REL', 'AGR', 'LLAV_IZQ', 'LLAV_DER'])
 
+// Muestra el flujo de tokens reconocidos por el lexer.
 function TokenFlow({ tokens = [] }) {
   const visibleTokens = tokens.filter((token) => token.type !== 'EOF')
 

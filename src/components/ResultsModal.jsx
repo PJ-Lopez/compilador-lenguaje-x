@@ -4,15 +4,18 @@ import SymbolTable from './SymbolTable'
 import SyntaxTreeVisualizer from './SyntaxTreeVisualizer'
 import TokenFlow from './TokenFlow'
 
+// Pestañas disponibles en el modal de resultados.
 const TABS = [
   { id: 'lexico', label: 'Léxico', ariaLabel: 'Análisis léxico y tabla de símbolos' },
   { id: 'arbol', label: 'Árbol Sintáctico', ariaLabel: 'Árbol sintáctico' },
   { id: 'errores', label: 'Errores', ariaLabel: 'Tabla de errores' },
 ]
 
+// Modal que resume la compilación y muestra tokens, AST y errores.
 function ResultsModal({ open, result, fileName, onClose }) {
   const [activeTab, setActiveTab] = useState('lexico')
 
+  // Cierra con Escape y bloquea el scroll del fondo mientras está abierto.
   useEffect(() => {
     if (!open) {
       return undefined
@@ -38,6 +41,7 @@ function ResultsModal({ open, result, fileName, onClose }) {
     return null
   }
 
+  // Totales y desglose de errores para el banner y las pestañas.
   const errors = result.errors ?? []
   const tokens = result.tokens ?? []
   const symbols = result.symbols ?? []
@@ -80,7 +84,7 @@ function ResultsModal({ open, result, fileName, onClose }) {
         <header className="modal-header">
           <div>
             <p className="modal-eyebrow">Resultado de compilación</p>
-            <h2 id="results-title">{fileName || 'programa.x'}</h2>
+            <h2 id="results-title">{fileName || 'programa.c'}</h2>
           </div>
           <button
             type="button"
